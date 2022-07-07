@@ -9,8 +9,8 @@
  for original source material:  www.visual6502.org
 */
 
-export function initialize_segment_definitions() {
-    window.segment_defs = [
+export function get_segment_definitions(): SegmentDefinitions {
+    return [
         [0, '+', 1, 5391, 8260, 5391, 8216, 5357, 8216, 5357, 8260],
         [0, '+', 1, 5391, 7919, 5391, 7873, 5356, 7873, 5356, 7919],
         [0, '+', 1, 5431, 8916, 5404, 8916, 5399, 8902, 5358, 8902, 5358, 8936, 5364, 8942, 5364, 8943, 5388, 8943, 5388, 8942, 5394, 8938, 5404, 8938, 5409, 8946, 5431, 8946],

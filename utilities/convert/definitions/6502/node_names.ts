@@ -20,8 +20,8 @@
  THE SOFTWARE.
 */
 
-export function initialize_node_names() {
-    window.node_names = {
+export function get_node_names(): NodeNames {
+    return {
         res: 159,       // pads: reset
         rw: 1156,       // pads: read not write
         db0: 1005,      // pads: databus

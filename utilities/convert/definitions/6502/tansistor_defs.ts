@@ -1,5 +1,5 @@
-export function initialize_transistor_definitions() {
-    window.transistor_defs = [
+export function get_transistor_definitions(): TransistorDefinitions {
+    return [
         ['t0', 357, 558, 217, [1450, 1510, 5143, 5320], [228, 297, 16, 3, 4238]],
         ['t1', 1608, 657, 349, [5424, 5629, 548, 922], [1007, 1079, 17, 5, 17477]],
         ['t2', 412, 558, 1146, [3867, 3899, 2465, 2642], [194, 192, 16, 3, 3016]],

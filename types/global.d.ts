@@ -1,12 +1,41 @@
-declare global {
-    type CompareNode = () => void;
+import {InternalStateType} from "../simulator/internals.ts";
 
-    interface Codes {
-        [code: string]: boolean,
+declare global {
+    type Tracer = (trace: string) => void;
+    type OnStateChange = (internals: Internals) => void;
+
+    interface Code {
+        address: number,
+        code: number[],
+        clock_triggers?: Triggers,
+        fetch_triggers?: Triggers,
+        read_triggers?: Triggers,
+        write_triggers?: Triggers,
+        user_reset_hi?: number,
+        user_reset_lo?: number,
     }
 
-    interface Disassembly {
-        [byte: number]: string,
+    interface DebugChanges {
+        nodes: string,
+        transistors: string
+    }
+
+    interface Internals {
+        type: InternalStateType,
+        logged: Logged
+    }
+
+    interface Logged {
+        [name: string]: (string | string[] | number);
+    }
+
+    interface NetList {
+        readonly nodes: NetNodes;
+        readonly node_names: NodeNames;
+        readonly node_name_list: string[];
+        readonly ngnd: number;
+        readonly npwr: number;
+        readonly transistors: Transistors;
     }
 
     interface NetNode {
@@ -16,25 +45,37 @@ declare global {
         pull_down: boolean,
         state: boolean,
         float: boolean,
-        gates: Transistor[],
-        c1c2s: Transistor[]
+        gates: number[],
+        c1c2s: number[]
+    }
+
+    interface NetNodes {
+        length: number;
+
+        [node: number]: (NetNode | null);
     }
 
     interface NodeNames {
         [node_name: string]: number
     }
 
-    interface Trace {
-        chip: string,
-        mem: number[]
+    interface Padding {
+        [name: string]: number
     }
 
-    interface Triggers {
-        [trigger: number]: string,
+    interface SegmentDefinitions {
+        length: number;
+
+        [index: number]: (number | string)[];
+    }
+
+    interface Trace {
+        state: string,
+        memory: number[]
     }
 
     interface Transistor {
-        name: string,
+        name: number,
         on: boolean,
         gate: number,
         c1: number,
@@ -42,24 +83,22 @@ declare global {
         bb: number,
     }
 
-    interface Transistors {
-        [transistor: string]: Transistor
+    interface TransistorDefinitions {
+        length: number;
+
+        [index: number]: (string | number | number[])[];
     }
 
-    //noinspection JSUnusedGlobalSymbols
-    interface Window {
-        log_level: number;
-        nodes: NetNode[];
-        node_names: NodeNames;
-        node_name_list: string[];
-        ngnd: number;
-        npwr: number;
-        segment_defs: (number | string)[][];
-        transistor_defs: (string | number | number[])[][];
-        transistors: Transistors;
-        user_code: number[];
-        user_reset_low: number;
-        user_reset_hi: number;
+    interface Transistors {
+        length: number;
+
+        [name: number]: Transistor;
+
+        forEach(each: (tn: Transistor) => void): void;
+    }
+
+    interface Triggers {
+        [trigger: number]: string,
     }
 }
 

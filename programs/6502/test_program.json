@@ -1,0 +1,21 @@
+{
+  "address": 0,
+  "code": [
+    169, 0,
+    32, 16, 0,
+    76, 2, 0,
+
+    0, 0, 0, 0,
+    0, 0, 0, 64,
+
+    232,
+    136,
+    230, 15,
+    56,
+    105, 2,
+    96
+  ],
+  "write_triggers": {
+    "15": "this.output += String.fromCharCode(data); console.log(`OUTPUT: ${this.output}\n`);"
+  }
+}
