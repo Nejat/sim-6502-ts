@@ -4,7 +4,7 @@ import {CircuitDebugger} from "./debugging.ts";
 
 export class Circuit {
     private readonly net_list: NetList;
-    private readonly tracer?: Tracer;
+    private readonly on_trace?: OnTrace;
     //noinspection JSMismatchedCollectionQueryUpdate
     private readonly traced_nodes: number[] = [];
     //noinspection JSMismatchedCollectionQueryUpdate
@@ -14,9 +14,9 @@ export class Circuit {
     private recalc_list: number[] = [];
     private recalc_hash: number[] = [];
 
-    constructor(net_list: NetList, tracer?: Tracer) {
+    constructor(net_list: NetList, on_trace?: OnTrace) {
         this.net_list = net_list;
-        this.tracer = tracer;
+        this.on_trace = on_trace;
     }
 
     // for one-hot or few-hot signal collections we want to list the active ones
@@ -304,8 +304,8 @@ export class Circuit {
 
         const new_state: boolean = this.get_node_value();
 
-        if (this.tracer !== undefined && (this.traced_nodes.indexOf(node) !== -1)) {
-            this.tracer(`recalc ${node} ${this.group}`);
+        if (this.on_trace !== undefined && (this.traced_nodes.indexOf(node) !== -1)) {
+            this.on_trace(`recalc ${node} ${this.group}`);
         }
 
         this.group.forEach((idx) => {
@@ -334,7 +334,7 @@ export class Circuit {
         for (let limiter = 0; limiter < 100; limiter++) {		// loop limiter
             if (node_list.length === 0) return;
 
-            if (this.tracer != null) {
+            if (this.on_trace != null) {
                 let idx: number;
 
                 for (idx = 0; idx < this.traced_nodes.length; idx++) {
@@ -342,9 +342,9 @@ export class Circuit {
                 }
 
                 if ((this.traced_nodes.length === 0) || (node_list.indexOf(this.traced_nodes[idx]) === -1)) {
-                    this.tracer(`recalc node list iteration: ${limiter} ${node_list.length} nodes`);
+                    this.on_trace(`recalc node list iteration: ${limiter} ${node_list.length} nodes`);
                 } else {
-                    this.tracer(`recalc node list iteration: ${limiter} ${node_list.length} nodes ${node_list}`);
+                    this.on_trace(`recalc node list iteration: ${limiter} ${node_list.length} nodes ${node_list}`);
                 }
             }
 
@@ -358,14 +358,14 @@ export class Circuit {
             this.recalc_hash = [];
         }
 
-        this.tracer?.(`${node_number} looping...`);
+        this.on_trace?.(`${node_number} looping...`);
     }
 
     private turn_transistor_on(transistor: Transistor) {
         if (transistor.on) return;
 
-        if (this.tracer != null && (this.traced_transistors.indexOf(transistor.name) !== -1)) {
-            this.tracer(`${transistor.name} on ${transistor.gate}, ${transistor.c1}, ${transistor.c2}`);
+        if (this.on_trace != null && (this.traced_transistors.indexOf(transistor.name) !== -1)) {
+            this.on_trace(`${transistor.name} on ${transistor.gate}, ${transistor.c1}, ${transistor.c2}`);
         }
 
         transistor.on = true;
@@ -376,8 +376,8 @@ export class Circuit {
     private turn_transistor_off(transistor: Transistor) {
         if (!transistor.on) return;
 
-        if (this.tracer != null && (this.traced_transistors.indexOf(transistor.name) !== -1)) {
-            this.tracer(`${transistor.name} off ${transistor.gate}, ${transistor.c1}, ${transistor.c2}`);
+        if (this.on_trace != null && (this.traced_transistors.indexOf(transistor.name) !== -1)) {
+            this.on_trace(`${transistor.name} off ${transistor.gate}, ${transistor.c1}, ${transistor.c2}`);
         }
 
         transistor.on = false;

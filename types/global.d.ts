@@ -1,8 +1,8 @@
 import {InternalStateType} from "../simulator/internals.ts";
 
 declare global {
-    type Tracer = (trace: string) => void;
     type OnStateChange = (internals: Internals) => void;
+    type OnTrace = (trace: string) => void;
 
     interface Code {
         address: number,
