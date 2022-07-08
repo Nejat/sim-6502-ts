@@ -16,6 +16,6 @@
     96
   ],
   "write_triggers": {
-    "15": "this.output += String.fromCharCode(data); console.log(`OUTPUT: ${this.output}\n`);"
+    "15": "this.output += String.fromCharCode(data); this.trigger({type: TriggerType.Write, output: `OUTPUT: ${this.output}\n`});"
   }
 }

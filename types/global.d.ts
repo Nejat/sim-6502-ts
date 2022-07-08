@@ -1,8 +1,10 @@
 import {InternalStateType} from "../simulator/internals.ts";
+import {TriggerType} from "../simulator/6502/cpu_6502.ts";
 
 declare global {
     type OnStateChange = (internals: Internals) => void;
     type OnTrace = (trace: string) => void;
+    type OnTrigger = (message: TriggerMessage) => void;
 
     interface Code {
         address: number,
@@ -95,6 +97,11 @@ declare global {
         [name: number]: Transistor;
 
         forEach(each: (tn: Transistor) => void): void;
+    }
+
+    interface TriggerMessage {
+        type: TriggerType,
+        output: string
     }
 
     interface Triggers {

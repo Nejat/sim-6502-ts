@@ -6,12 +6,20 @@ import {hex_word} from "../../utilities/index.ts";
 
 const data_bus = ['db0', 'db1', 'db2', 'db3', 'db4', 'db5', 'db6', 'db7'];
 
+export enum TriggerType {
+    Clock,
+    Fetch,
+    Read,
+    Write
+}
+
 export class CPU6502 {
     private readonly circuit: Circuit;
     private readonly memory: Memory;
     private readonly name = '6502';
     private trace: Trace[] = [];
     private readonly internals: InternalState6502;
+    private readonly on_trigger?: OnTrigger;
 
     // triggers for breakpoints, watchpoints, input pin events
     // almost always are undefined when tested, so minimal impact on performance    private clock_triggers: Triggers = {};
@@ -34,10 +42,12 @@ export class CPU6502 {
         circuit: Circuit,
         memory: Memory,
         internals: InternalState6502,
+        on_trigger?: OnTrigger
     ) {
         this.circuit = circuit;
         this.memory = memory;
         this.internals = internals;
+        this.on_trigger = on_trigger;
 
         this.initialized = false;
         this.running = false;
@@ -368,4 +378,5 @@ export class CPU6502 {
 
     private stop_chip = () => this.running = false;
 
+    private trigger = (message: TriggerMessage) => this.on_trigger?.(message);
 }
