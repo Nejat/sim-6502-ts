@@ -1,5 +1,5 @@
-import {InternalStateType} from "../simulator/internals.ts";
-import {TriggerType} from "../simulator/6502/cpu_6502.ts";
+import {StateType} from "../simulator/internals.ts";
+import {Trigger} from "../simulator/6502/cpu_6502.ts";
 
 declare global {
     type OnStateChange = (internals: Internals) => void;
@@ -23,7 +23,7 @@ declare global {
     }
 
     interface Internals {
-        type: InternalStateType,
+        type: StateType,
         logged: Logged
     }
 
@@ -44,9 +44,6 @@ declare global {
         segments: number[][],
         num: number,
         pull_up: boolean,
-        pull_down: boolean,
-        state: boolean,
-        float: boolean,
         gates: number[],
         c1c2s: number[]
     }
@@ -55,6 +52,19 @@ declare global {
         length: number;
 
         [node: number]: (NetNode | null);
+    }
+
+    interface NetNodeState {
+        pull_up: boolean,
+        pull_down: boolean,
+        state: boolean,
+        float: boolean,
+    }
+
+    interface NetNodeStates {
+        length: number;
+
+        [node: number]: (NetNodeState | null);
     }
 
     interface NodeNames {
@@ -78,7 +88,6 @@ declare global {
 
     interface Transistor {
         name: number,
-        on: boolean,
         gate: number,
         c1: number,
         c2: number,
@@ -99,8 +108,14 @@ declare global {
         forEach(each: (tn: Transistor) => void): void;
     }
 
+    interface TransistorStates {
+        length: number;
+
+        [name: number]: boolean;
+    }
+
     interface TriggerMessage {
-        type: TriggerType,
+        type: Trigger,
         output: string
     }
 

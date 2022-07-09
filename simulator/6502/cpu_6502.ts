@@ -6,7 +6,8 @@ import {hex_word} from "../../utilities/index.ts";
 
 const data_bus = ['db0', 'db1', 'db2', 'db3', 'db4', 'db5', 'db6', 'db7'];
 
-export enum TriggerType {
+//noinspection JSUnusedGlobalSymbols
+export enum Trigger {
     Clock,
     Fetch,
     Read,
@@ -35,7 +36,7 @@ export class CPU6502 {
 
     private cycle = 0;
     private initialized = false;
-    private output = '';
+    private buffer = '';
     private running = false;
 
     constructor(
@@ -329,7 +330,7 @@ export class CPU6502 {
             this.half_step();
         }
 
-        this.output = '';
+        this.buffer = '';
         this.cycle = 0;
         this.initialized = true;
 
@@ -378,5 +379,6 @@ export class CPU6502 {
 
     private stop_chip = () => this.running = false;
 
+    //noinspection JSUnusedLocalSymbols
     private trigger = (message: TriggerMessage) => this.on_trigger?.(message);
 }
