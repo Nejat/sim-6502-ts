@@ -20,6 +20,8 @@
  THE SOFTWARE.
 */
 
+import "../../types/global.d.ts";
+
 export function build_net_list(
     node_names: NodeNames,
     segment_definitions: SegmentDefinitions,
@@ -63,9 +65,6 @@ function get_nodes(segment_defs: SegmentDefinitions, ngnd: number, npwr: number)
                 segments: [],
                 num: node_number,
                 pull_up: segment[1] == '+',
-                pull_down: false,
-                state: false,
-                float: false,
                 gates: [],
                 c1c2s: []
             };
@@ -138,7 +137,7 @@ function get_transistors(
             nodes[c2]!.c1c2s.push(name);
         }
 
-        transistors[name] = {name, on: false, gate, c1, c2, bb};
+        transistors[name] = {name, gate, c1, c2, bb};
     }
 
     return transistors;

@@ -1,7 +1,7 @@
 import "../../types/global.d.ts";
 import {Circuit} from "../circuit.ts";
 import {Disassembler} from "../disassembler.ts";
-import {InternalStateType} from "../internals.ts";
+import {StateType} from "../internals.ts";
 import {hex_byte, hex_word, now} from "../../utilities/index.ts";
 import {Disassembler6502} from "./disassembler_6502.ts";
 
@@ -125,7 +125,7 @@ export class InternalState6502 {
             }
         }
 
-        this.on_state_change({type: InternalStateType.Trace, logged})
+        this.on_state_change({type: StateType.Trace, logged})
 
         this.log_signals(cycle, this.log_these, data_bus);
     }
@@ -303,7 +303,7 @@ export class InternalState6502 {
             logged[signal] = this.bus_to_string(cycle, signal, data_bus);
         }
 
-        this.on_state_change?.({type: InternalStateType.Signals, logged});
+        this.on_state_change?.({type: StateType.Signals, logged});
     }
 
     private read_accumulator = (): number => this.circuit.read_bits('a', 8);

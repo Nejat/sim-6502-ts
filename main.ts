@@ -15,11 +15,11 @@ if (!exists(debug_folder)) {
     await Deno.mkdir(debug_folder);
 }
 
-const debug_output = await Deno.create(`${debug_folder}/debug_output.txt`);
+const debug_output = await Deno.create(`${debug_folder}/debug_output_states.txt`);
 const encoder = new TextEncoder();
 
 //noinspection JSUnusedLocalSymbols
-const _on_trace = async (trace: string) => await writeAll(debug_output, encoder.encode(trace));
+const on_trace = async (trace: string) => await writeAll(debug_output, encoder.encode(trace));
 const on_state_change = async (message: Internals) => await writeAll(debug_output, encoder.encode(`${JSON.stringify(message.logged)}\n`));
 const on_trigger = async (trigger: TriggerMessage) => await writeAll(debug_output, encoder.encode(trigger.output));
 
