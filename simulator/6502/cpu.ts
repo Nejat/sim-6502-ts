@@ -118,8 +118,6 @@ export class CPU6502 {
     }
 
     load_program(executable: Code) {
-        console.log('\nloading program to address:', hex_word(executable.address));
-
         this.memory.clear();
 
         this.clock_triggers = {};
@@ -127,11 +125,15 @@ export class CPU6502 {
         this.read_triggers = {};
         this.write_triggers = {};
 
-        // a moderate size of static test_program might be loaded
-        for (const idx in executable.code) {
-            const offset = parseInt(idx);
-            this.memory.write(executable.address + offset, executable.code[offset]);
-        }
+        executable.code.forEach(segment => {
+            console.log('loading program segment to address: 0x', hex_word(segment.address));
+
+            // a moderate size of static test_program might be loaded
+            for (const idx in segment.code) {
+                const offset = parseInt(idx);
+                this.memory.write(segment.address + offset, segment.code[offset]);
+            }
+        });
 
         if (executable.clock_triggers !== undefined) {
             for (const idx in executable.clock_triggers) {
@@ -298,7 +300,7 @@ export class CPU6502 {
     }
 
     private init_chip() {
-        console.log('Initialize Chip ...\n');
+        console.log('initialize chip ...\n');
 
         this.circuit.reset();
 

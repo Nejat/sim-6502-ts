@@ -8,14 +8,18 @@ declare global {
     type OnTrigger = (message: TriggerMessage) => void;
 
     interface Code {
-        address: number,
-        code: number[],
+        code: CodeSegment[],
         clock_triggers?: Triggers,
         fetch_triggers?: Triggers,
         read_triggers?: Triggers,
         write_triggers?: Triggers,
         user_reset_hi?: number,
         user_reset_lo?: number,
+    }
+
+    interface CodeSegment {
+        address: number,
+        code: number[],
     }
 
     interface DebugChanges {
