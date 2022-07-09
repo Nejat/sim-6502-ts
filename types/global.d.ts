@@ -22,6 +22,11 @@ declare global {
         code: number[],
     }
 
+    interface CPUTest {
+        program: Code,
+        test_steps: Instructions
+    }
+
     interface DebugChanges {
         nodes: string,
         transistors: string
@@ -30,6 +35,17 @@ declare global {
     interface Internals {
         type: StateType,
         logged: Logged
+    }
+
+    interface Instruction {
+        type: string,
+        value: (string | number | undefined)
+    }
+
+    interface Instructions {
+        [index: number]: Instruction,
+
+        forEach(each: (instr: Instruction) => void): void;
     }
 
     interface Logged {
