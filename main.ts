@@ -20,7 +20,7 @@ const on_trigger = async (trigger: TriggerMessage) => await debug(trigger.output
 
 const net_list_6502 = await read_json<NetList>(net_list_6502_definition);
 const circuit = new Circuit(net_list_6502, /*on_trace*/);
-const op_codes_6502 = await read_json<NetList>(op_codes_6502_definitions);
+const op_codes_6502 = await read_json<number[]>(op_codes_6502_definitions);
 const decoder = new InstructionDecoder(op_codes_6502);
 const tracer = new InternalState6502(circuit, decoder, on_state_change);
 const memory = new Memory();
