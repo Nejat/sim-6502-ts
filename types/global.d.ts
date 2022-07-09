@@ -1,5 +1,5 @@
 import {StateType} from "../simulator/internals.ts";
-import {Trigger} from "../simulator/6502/cpu_6502.ts";
+import {Trigger} from "../simulator/trigger.ts";
 
 declare global {
     type DebugOutput = (debug: string) => Promise;

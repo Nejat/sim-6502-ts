@@ -1,10 +1,10 @@
 import "./types/global.d.ts";
-import {debug_writer, read_json} from "./utilities/index.ts";
+import {CPU6502} from "./simulator/6502/cpu.ts";
+import {InternalState6502} from "./simulator/6502/internal_state.ts";
 import {Circuit} from "./simulator/circuit.ts";
-import {CPU6502} from "./simulator/6502/cpu_6502.ts";
-import {Memory} from "./simulator/memory.ts";
-import {InternalState6502} from "./simulator/6502/internal_state_6502.ts";
 import {InstructionDecoder} from "./simulator/instruction_decoder.ts";
+import {Memory} from "./simulator/memory.ts";
+import {debug_writer, read_json} from "./utilities/index.ts";
 
 const debug_output_file = "debug_output_states.txt";
 const net_list_6502_file = 'definitions/6502/net_list.json';
