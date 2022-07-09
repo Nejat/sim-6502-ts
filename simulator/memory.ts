@@ -10,12 +10,10 @@ export class Memory {
     dump_memory(): void {
         const lines: string[] = [];
         let line = ''
-
-        for (const array_index in this.memory) {
-            const idx = parseInt(array_index);
-
+        let last = undefined;
+        const write_byte = (idx: number, byte: string) => {
             if (idx % 8 === 0) {
-                line += '  ';
+                line += ' ';
             }
 
             if (idx % 16 === 0) {
@@ -31,8 +29,43 @@ export class Memory {
                 line = `${hex_word(idx)}: `;
             }
 
-            line += `${hex_byte(this.memory[idx])} `;
+            line += `${byte} `;
+        };
+
+        const write_tail = () => {
+            const tail = 16 - (last + 1) % 16;
+
+            if (tail < 16) {
+                for (let idx_fill = 0; idx_fill < tail; idx_fill++) {
+                    write_byte(last + idx_fill + 1, '--');
+                }
+            }
+        };
+
+        for (const array_index in this.memory) {
+            let idx = parseInt(array_index);
+
+            if (last === undefined || idx - last !== 1) {
+                write_tail();
+
+                const start = idx % 16;
+                last = idx;
+
+                if (start !== 0) {
+                    for (let idx_fill = 0; idx_fill < start; idx_fill++) {
+                        idx = last - start + idx_fill;
+                        write_byte(idx, '--');
+                    }
+                    idx++;
+                }
+            }
+
+            write_byte(idx, hex_byte(this.memory[idx]));
+
+            last = idx;
         }
+
+        write_tail();
 
         line = line.trim();
 
