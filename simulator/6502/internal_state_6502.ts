@@ -303,7 +303,7 @@ export class InternalState6502 {
             logged[signal] = this.bus_to_string(cycle, signal, data_bus);
         }
 
-        this.on_state_change?.({type: StateType.Signals, logged});
+        this.on_state_change({type: StateType.Signals, logged});
     }
 
     private read_accumulator = (): number => this.circuit.read_bits('a', 8);
