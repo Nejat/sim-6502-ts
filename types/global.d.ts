@@ -8,14 +8,23 @@ declare global {
     type OnTrigger = (message: TriggerMessage) => void;
 
     interface Code {
-        address: number,
-        code: number[],
+        code: CodeSegment[],
         clock_triggers?: Triggers,
         fetch_triggers?: Triggers,
         read_triggers?: Triggers,
         write_triggers?: Triggers,
         user_reset_hi?: number,
         user_reset_lo?: number,
+    }
+
+    interface CodeSegment {
+        address: number,
+        code: number[],
+    }
+
+    interface CPUTest {
+        program: Code,
+        test_steps: Instructions
     }
 
     interface DebugChanges {
@@ -26,6 +35,17 @@ declare global {
     interface Internals {
         type: StateType,
         logged: Logged
+    }
+
+    interface Instruction {
+        type: string,
+        value: (string | number | undefined)
+    }
+
+    interface Instructions {
+        [index: number]: Instruction,
+
+        forEach(each: (instr: Instruction) => void): void;
     }
 
     interface Logged {

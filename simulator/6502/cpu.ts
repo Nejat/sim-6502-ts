@@ -118,8 +118,6 @@ export class CPU6502 {
     }
 
     load_program(executable: Code) {
-        console.log('\nloading program to address:', hex_word(executable.address));
-
         this.memory.clear();
 
         this.clock_triggers = {};
@@ -127,11 +125,15 @@ export class CPU6502 {
         this.read_triggers = {};
         this.write_triggers = {};
 
-        // a moderate size of static test_program might be loaded
-        for (const idx in executable.code) {
-            const offset = parseInt(idx);
-            this.memory.write(executable.address + offset, executable.code[offset]);
-        }
+        executable.code.forEach(segment => {
+            console.log('loading program segment to address: 0x', hex_word(segment.address));
+
+            // a moderate size of static test_program might be loaded
+            for (const idx in segment.code) {
+                const offset = parseInt(idx);
+                this.memory.write(segment.address + offset, segment.code[offset]);
+            }
+        });
 
         if (executable.clock_triggers !== undefined) {
             for (const idx in executable.clock_triggers) {
@@ -156,8 +158,6 @@ export class CPU6502 {
                 this.write_triggers[idx] = executable.write_triggers[idx];
             }
         }
-
-        this.memory.dump_memory();
 
         // default reset vector will be 0x0000 because undefined memory reads as zero
         if (executable.user_reset_lo != undefined) {
@@ -196,54 +196,37 @@ export class CPU6502 {
     }
 
     //noinspection JSUnusedGlobalSymbols
-    test_nmi(steps: number) {
+    test_cpu(test: CPUTest) {
         this.reset_chip();
+        this.load_program(test.program);
 
-        this.memory.write(0x0000, 0x38); // set carry
-        this.memory.write(0x0001, 0x4c); // jump to test code
-        this.memory.write(0x0002, 0x06);
-        this.memory.write(0x0003, 0x23);
+        test.test_steps
+            .forEach(instr => {
+                switch (instr.type) {
+                    case "step": {
+                        const steps = instr.value as number;
+                        for (let idx = 0; idx < steps; idx++) this.step();
+                    }
+                        break;
 
-        this.memory.write(0x22ff, 0x38); // set carry
-        this.memory.write(0x2300, 0xea);
-        this.memory.write(0x2301, 0xea);
-        this.memory.write(0x2302, 0xea);
-        this.memory.write(0x2303, 0xea);
-        this.memory.write(0x2304, 0xb0); // branch carry set to self
-        this.memory.write(0x2305, 0xfe);
+                    case "set_lo": {
+                        const node = instr.value as string;
+                        this.circuit.set_lo(node);
+                    }
+                        break;
 
-        this.memory.write(0x2306, 0xb0); // branch carry set to self
-        this.memory.write(0x2307, 0x01);
-        this.memory.write(0x2308, 0x00); // brk should be skipped
-        this.memory.write(0x2309, 0xa9); // anything
-        this.memory.write(0x230a, 0xde); // anything
-        this.memory.write(0x230b, 0xb0); // branch back with page crossing
-        this.memory.write(0x230c, 0xf2);
+                    case "set_hi": {
+                        const node = instr.value as string;
+                        this.circuit.set_hi(node);
+                    }
+                        break;
 
-        this.memory.write(0xc018, 0x40); // nmi handler
-
-        this.memory.write(0xfffa, 0x18); // nmi vector
-        this.memory.write(0xfffb, 0xc0);
-        this.memory.write(0xfffc, 0x00); // reset vector
-        this.memory.write(0xfffd, 0x00);
-
-        for (let idx = 0; idx < steps; idx++) {
-            this.step();
-        }
-
-        this.circuit.set_lo('nmi');
-        this.internals.log_chip_status(this.cycle, this.address_bus_read(), this.data_bus_read());
-
-        for (let idx = 0; idx < 8; idx++) {
-            this.step();
-        }
-
-        this.circuit.set_hi('nmi');
-        this.internals.log_chip_status(this.cycle, this.address_bus_read(), this.data_bus_read());
-
-        for (let idx = 0; idx < 16; idx++) {
-            this.step();
-        }
+                    case "log_chip_status": {
+                        this.internals.log_chip_status(this.cycle, this.address_bus_read(), this.data_bus_read());
+                    }
+                        break;
+                }
+            });
     }
 
     private address_bus_read = (): number => this.circuit.read_bits('ab', 16);
@@ -298,7 +281,7 @@ export class CPU6502 {
     }
 
     private init_chip() {
-        console.log('Initialize Chip ...\n');
+        console.log('initialize chip ...\n');
 
         this.circuit.reset();
 

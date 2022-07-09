@@ -1,0 +1,35 @@
+{
+  "program": {
+    "code": [
+      {
+        "address": 0,
+        "code": [ 56, 76, 6, 35 ]
+      },
+      {
+        "address": 8959,
+        "code": [
+          56,
+          234, 234, 234, 234, 176, 254,
+          176, 1, 0, 169, 222, 176, 242
+        ]
+      },
+      {
+        "address": 49176,
+        "code": [ 64 ]
+      },
+      {
+        "address": 65530,
+        "code": [ 24, 192, 0, 0 ]
+      }
+    ]
+  },
+  "test_steps": [
+    { "type": "step", "value": 100 },
+    { "type": "set_lo", "value": "nmi" },
+    { "type": "log_chip_status" },
+    { "type": "step", "value": 8 },
+    { "type": "set_hi", "value": "nmi" },
+    { "type": "log_chip_status", "value": "" },
+    { "type": "step", "value": 16 }
+  ]
+}
