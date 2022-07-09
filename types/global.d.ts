@@ -2,6 +2,7 @@ import {StateType} from "../simulator/internals.ts";
 import {Trigger} from "../simulator/6502/cpu_6502.ts";
 
 declare global {
+    type DebugOutput = (debug: string) => Promise;
     type OnStateChange = (internals: Internals) => void;
     type OnTrace = (trace: string) => void;
     type OnTrigger = (message: TriggerMessage) => void;
