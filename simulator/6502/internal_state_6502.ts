@@ -1,9 +1,9 @@
 import "../../types/global.d.ts";
 import {Circuit} from "../circuit.ts";
-import {Disassembler} from "../disassembler.ts";
+import {Decoder} from "../decoder.ts";
 import {StateType} from "../internals.ts";
 import {hex_byte, hex_word, now} from "../../utilities/index.ts";
-import {Disassembler6502} from "./disassembler_6502.ts";
+import {InstructionDecoder} from "../instruction_decoder.ts";
 
 export class InternalState6502 {
     //noinspection JSUnusedGlobalSymbols
@@ -44,7 +44,7 @@ export class InternalState6502 {
     };
 
     private readonly circuit: Circuit;
-    private readonly disassembler: Disassembler;
+    private readonly decoder: Decoder;
     private readonly expert_mode: boolean;
     private readonly log_level: number;
     private readonly golden_check_sum: (string | undefined);
@@ -71,7 +71,7 @@ export class InternalState6502 {
 
     constructor(
         circuit: Circuit,
-        disassembler: Disassembler6502,
+        decoder: InstructionDecoder,
         on_state_change?: OnStateChange,
         log_level = 2
     ) {
@@ -79,7 +79,7 @@ export class InternalState6502 {
         this.expert_mode = log_level > 1;
         this.log_level = log_level;
         this.circuit = circuit;
-        this.disassembler = disassembler;
+        this.decoder = decoder;
         this.golden_check_sum = undefined;
     }
 
@@ -262,8 +262,8 @@ export class InternalState6502 {
             // Pretty-printed phase indication based on the state of cp1,
             // the internal Phase 1 node
             return '&Phi;' + (this.circuit.is_named_node_high('cp1') ? '1' : '2');
-        if (bus_name === 'Execute') return this.disassembler.disassemble(this.circuit.read_bits('ir', 8));
-        if (bus_name === 'Fetch') return this.circuit.is_named_node_high('sync') ? this.disassembler.disassemble(data_bus) : '';
+        if (bus_name === 'Execute') return this.decoder.decode_instruction(this.circuit.read_bits('ir', 8));
+        if (bus_name === 'Fetch') return this.circuit.is_named_node_high('sync') ? this.decoder.decode_instruction(data_bus) : '';
         // PLA outputs are mostly ^op- but some have a prefix too
         //    - we'll allow the x and xx prefix but ignore the #
         if (bus_name === 'plaOutputs') return this.circuit.active_signals('^([x]?x-)?op-');
