@@ -1,18 +1,11 @@
 import "../../types/global.d.ts";
 import {Memory} from "../memory.ts";
 import {Circuit} from "../circuit.ts";
-import {InternalState6502} from "./internal_state_6502.ts";
+import {InternalState6502} from "./internal_state.ts";
 import {hex_word} from "../../utilities/index.ts";
+import {Trigger} from "../trigger.ts";
 
 const data_bus = ['db0', 'db1', 'db2', 'db3', 'db4', 'db5', 'db6', 'db7'];
-
-//noinspection JSUnusedGlobalSymbols
-export enum Trigger {
-    Clock,
-    Fetch,
-    Read,
-    Write
-}
 
 export class CPU6502 {
     private readonly circuit: Circuit;
@@ -381,4 +374,16 @@ export class CPU6502 {
 
     //noinspection JSUnusedLocalSymbols
     private trigger = (message: TriggerMessage) => this.on_trigger?.(message);
+
+    //noinspection JSUnusedLocalSymbols
+    private clock_trigger = (message: string) => this.trigger({type: Trigger.Clock, output: message});
+
+    //noinspection JSUnusedLocalSymbols
+    private fetch_trigger = (message: string) => this.trigger({type: Trigger.Fetch, output: message});
+
+    //noinspection JSUnusedLocalSymbols
+    private read_trigger = (message: string) => this.trigger({type: Trigger.Read, output: message});
+
+    //noinspection JSUnusedLocalSymbols
+    private write_trigger = (message: string) => this.trigger({type: Trigger.Write, output: message});
 }
