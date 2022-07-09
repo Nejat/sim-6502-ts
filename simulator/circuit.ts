@@ -1,3 +1,4 @@
+import "../types/global.d.ts";
 import {codes} from "./codes.ts";
 import {array_contains} from "../utilities/index.ts";
 import {CircuitDebugger} from "./debugging.ts";
@@ -11,8 +12,10 @@ export class Circuit {
     private readonly traced_transistors: number[] = [];
 
     private group: number[] = [];
+    private node_states: NetNodeStates = [];
     private recalc_list: number[] = [];
     private recalc_hash: number[] = [];
+    private transistors: TransistorStates = [];
 
     constructor(net_list: NetList, on_trace?: OnTrace) {
         this.net_list = net_list;
@@ -74,7 +77,7 @@ export class Circuit {
     }
 
     //noinspection JSUnusedGlobalSymbols
-    get_debugger = (): CircuitDebugger => new CircuitDebugger(this.net_list);
+    get_debugger = (): CircuitDebugger => new CircuitDebugger(this.node_states, this.transistors);
 
     get_nodes(source: (number | string)): number[] {
         const node_number = typeof source === "string" ? this.net_list.node_names[source as string] : source as number;
@@ -103,9 +106,9 @@ export class Circuit {
         return nodes;
     }
 
-    is_named_node_high = (node: string): boolean => this.net_list.nodes[this.net_list.node_names[node]]!.state;
+    is_named_node_high = (node: string): boolean => this.node_states[this.net_list.node_names[node]]!.state;
 
-    is_node_high = (node: number): boolean => this.net_list.nodes[node]!.state;
+    is_node_high = (node: number): boolean => this.node_states[node]!.state;
 
     read_bit = (name: string): number => this.is_named_node_high(name) ? 1 : 0;
 
@@ -122,48 +125,64 @@ export class Circuit {
     reset() {
         const net_list = this.net_list;
 
+        this.node_states = [];
+        this.transistors = [];
+
         for (const node_number in net_list.nodes) {
             const net_node = net_list.nodes[node_number];
 
-            if (net_node === null) continue;
+            if (net_node === null) {
+                this.node_states[node_number] = null
+                continue;
+            }
 
-            net_node.state = false;
-            net_node.float = true;
+            this.node_states[node_number] = {
+                pull_up: net_node.pull_up,
+                pull_down: false,
+                state: false,
+                float: true
+            };
         }
 
         const vcc = net_list.nodes[net_list.ngnd]!;
 
-        vcc.state = false;
-        vcc.float = false;
+        this.node_states[net_list.ngnd] = {
+            pull_up: vcc.pull_up,
+            pull_down: false,
+            state: false,
+            float: false
+        };
 
         const vss = net_list.nodes[net_list.npwr]!;
 
-        vss.state = true;
-        vss.float = false;
+        this.node_states[net_list.npwr] = {
+            pull_up: vss.pull_up,
+            pull_down: false,
+            state: true,
+            float: false
+        };
 
         for (const idx in net_list.transistors) {
-            net_list.transistors[idx].on = false;
+            this.transistors[idx] = false;
         }
     }
 
     recalc_all_nodes = () => this.recalc_node_list(this.all_nodes());
 
     set_hi(node_name: string) {
-        const net_list = this.net_list;
-        const node_number = net_list.node_names[node_name];
+        const node_number = this.net_list.node_names[node_name];
 
-        net_list.nodes[node_number]!.pull_up = true;
-        net_list.nodes[node_number]!.pull_down = false;
+        this.node_states[node_number]!.pull_up = true;
+        this.node_states[node_number]!.pull_down = false;
 
         this.recalc_node_list([node_number]);
     }
 
     set_lo(node_name: string) {
-        const net_list = this.net_list;
-        const node_number = net_list.node_names[node_name];
+        const node_number = this.net_list.node_names[node_name];
 
-        net_list.nodes[node_number]!.pull_up = false;
-        net_list.nodes[node_number]!.pull_down = true;
+        this.node_states[node_number]!.pull_up = false;
+        this.node_states[node_number]!.pull_down = true;
 
         this.recalc_node_list([node_number]);
     }
@@ -173,13 +192,12 @@ export class Circuit {
             if (state_value[idx] === 'x') continue;
 
             const state = codes[state_value[idx]];
-            const net_list = this.net_list;
 
-            net_list.nodes[idx]!.state = state;
+            this.node_states[idx]!.state = state;
 
-            net_list.nodes[idx]!.gates
+            this.net_list.nodes[idx]!.gates
                 .forEach((name: number) => {
-                    net_list.transistors[name].on = state;
+                    this.transistors[name] = state;
                 });
         }
     }
@@ -189,7 +207,7 @@ export class Circuit {
         const net_list = this.net_list;
 
         for (let idx = 0; idx < net_list.nodes.length; idx++) {
-            const node = net_list.nodes[idx];
+            const node = this.node_states[idx];
 
             if (node === null) {
                 state += 'x';
@@ -206,20 +224,19 @@ export class Circuit {
     }
 
     write_bits(data: number, nodes: string[]) {
-        const net_list = this.net_list;
         const recalc_nodes: number[] = [];
 
         nodes.forEach(
             nd => {
-                const node_number = net_list.node_names[nd];
-                const node = net_list.nodes[node_number]!;
+                const node_number = this.net_list.node_names[nd];
+                const node_state = this.node_states[node_number]!;
 
                 if ((data % 2) === 0) {
-                    node.pull_down = true;
-                    node.pull_up = false;
+                    node_state.pull_down = true;
+                    node_state.pull_up = false;
                 } else {
-                    node.pull_down = false;
-                    node.pull_up = true;
+                    node_state.pull_down = false;
+                    node_state.pull_up = true;
                 }
 
                 recalc_nodes.push(node_number);
@@ -263,9 +280,9 @@ export class Circuit {
 
         net_list.nodes[node_number]!.c1c2s.forEach(
             (name: number) => {
-                const transistor = net_list.transistors[name];
+                if (!this.transistors[name]) return;
 
-                if (!transistor.on) return;
+                const transistor = net_list.transistors[name];
 
                 let other: (number | undefined) = undefined;
 
@@ -310,15 +327,16 @@ export class Circuit {
 
         this.group.forEach((idx) => {
             const node: NetNode = net_list.nodes[idx]!;
+            const node_state: NetNodeState = this.node_states[idx]!;
 
-            if (node.state === new_state) return;
+            if (node_state.state === new_state) return;
 
-            node.state = new_state;
+            node_state.state = new_state;
 
             node.gates.forEach((name: number) => {
                 const transistor = net_list.transistors[name];
 
-                node.state
+                node_state.state
                     ? this.turn_transistor_on(transistor)
                     : this.turn_transistor_off(transistor);
             });
@@ -362,25 +380,25 @@ export class Circuit {
     }
 
     private turn_transistor_on(transistor: Transistor) {
-        if (transistor.on) return;
+        if (this.transistors[transistor.name]) return;
 
         if (this.on_trace != null && (this.traced_transistors.indexOf(transistor.name) !== -1)) {
             this.on_trace(`${transistor.name} on ${transistor.gate}, ${transistor.c1}, ${transistor.c2}`);
         }
 
-        transistor.on = true;
+        this.transistors[transistor.name] = true;
 
         this.add_recalc_node(transistor.c1);
     }
 
     private turn_transistor_off(transistor: Transistor) {
-        if (!transistor.on) return;
+        if (!this.transistors[transistor.name]) return;
 
         if (this.on_trace != null && (this.traced_transistors.indexOf(transistor.name) !== -1)) {
             this.on_trace(`${transistor.name} off ${transistor.gate}, ${transistor.c1}, ${transistor.c2}`);
         }
 
-        transistor.on = false;
+        this.transistors[transistor.name] = false;
 
         this.add_recalc_node(transistor.c1);
         this.add_recalc_node(transistor.c2);
@@ -400,7 +418,7 @@ export class Circuit {
         if (array_contains(this.group, net_list.npwr)) return true;
 
         for (const idx in this.group) {
-            const node: NetNode = net_list.nodes[this.group[idx]]!;
+            const node: NetNodeState = this.node_states[this.group[idx]]!;
 
             if (node.pull_up) return true;
             if (node.pull_down) return false;

@@ -1,4 +1,4 @@
-export enum InternalStateType {
+export enum StateType {
     Signals,
     Trace,
 }

@@ -2,12 +2,15 @@ import "../types/global.d.ts";
 
 //noinspection JSUnusedGlobalSymbols
 export class CircuitDebugger {
-    private readonly before_nodes: NetNodes = [];
-    private readonly before_transistors: Transistors = [];
-    private readonly net_list: NetList;
+    private readonly node_states: NetNodeStates;
+    private readonly transistors: TransistorStates;
 
-    constructor(net_list: NetList) {
-        this.net_list = net_list;
+    private before_node_states: NetNodeStates = [];
+    private before_transistors: TransistorStates = [];
+
+    constructor(states: NetNodeStates, transistors: TransistorStates) {
+        this.node_states = states;
+        this.transistors = transistors;
     }
 
     private static dump_changes(name: string, padding: number, changed: string[]): string {
@@ -37,16 +40,12 @@ export class CircuitDebugger {
     }
 
     reset() {
-        this.before_nodes.length = 0;
-        this.before_transistors.length = 0;
+        this.before_node_states = [];
+        this.before_transistors = Object.assign([], this.transistors);
 
-        for (const idx in this.net_list.nodes) {
-            this.before_nodes[idx] = Object.assign({}, this.net_list.nodes[idx]);
+        for (const idx in this.node_states) {
+            this.before_node_states[idx] = Object.assign({}, this.node_states[idx]);
         }
-
-        this.net_list.transistors.forEach(tn => {
-            this.before_transistors[tn.name] = Object.assign({}, tn);
-        });
     }
 
     changes = (): DebugChanges => ({
@@ -57,9 +56,9 @@ export class CircuitDebugger {
     private dump_changed_nodes(): string {
         const changed: string[] = [];
 
-        for (const idx in this.net_list.nodes) {
-            const original = this.before_nodes[idx];
-            const current = this.net_list.nodes[idx];
+        for (const idx in this.node_states) {
+            const original = this.before_node_states[idx];
+            const current = this.node_states[idx];
 
             if (original === null || current === null) continue;
 
@@ -69,7 +68,7 @@ export class CircuitDebugger {
                 || original.pull_up !== current.pull_up
 //                || original.pull_down !== current.pull_down
             ) {
-                changed.push(`${current.num}:${current.state ? '+' : '-'}${current.float ? '+' : '-'}${current.pull_up ? '+' : '-'}${current.pull_down ? '+' : '-'}`);
+                changed.push(`${idx}:${current.state ? '+' : '-'}${current.float ? '+' : '-'}${current.pull_up ? '+' : '-'}${current.pull_down ? '+' : '-'}`);
             }
         }
 
@@ -79,12 +78,12 @@ export class CircuitDebugger {
     private dump_changed_transistors(): string {
         const changed: string[] = [];
 
-        for (const idx in this.net_list.transistors) {
+        for (const idx in this.transistors) {
             const original = this.before_transistors[idx];
-            const current = this.net_list.transistors[idx];
+            const current = this.transistors[idx];
 
-            if (original.on !== current.on) {
-                changed.push(`${current.name}:${current.on ? '+' : '-'}`);
+            if (original !== current) {
+                changed.push(`${idx}:${current ? '+' : '-'}`);
             }
         }
 
