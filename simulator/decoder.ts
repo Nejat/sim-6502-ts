@@ -1,3 +1,3 @@
 export interface Decoder {
-    decode_instruction(address: number): string;
+    decode_instruction(op_code: number): string;
 }

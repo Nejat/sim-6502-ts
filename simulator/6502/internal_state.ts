@@ -83,7 +83,7 @@ export class InternalState6502 {
         this.golden_check_sum = undefined;
     }
 
-    private static adler32(x: string) {
+    private static adler32(x: string): string {
         let lo = 1;
         let hi = 0;
 
@@ -97,6 +97,8 @@ export class InternalState6502 {
 
     log_chip_status(cycle: number, address_bus: number, data_bus: number) {
         if (this.on_state_change === undefined) return;
+
+        this.hz_instantaneous(cycle);
 
         const logged: Logged = {
             'halfcyc': cycle,
@@ -128,44 +130,6 @@ export class InternalState6502 {
         this.on_state_change({type: StateType.Trace, logged})
 
         this.log_signals(cycle, this.log_these, data_bus);
-    }
-
-    // return instantaneous speed: called twice, before and after a timed run using go_for()
-    hz_instantaneous(cycle: number): number {
-        const hz_timestamp: number = now();
-
-        this.prev_hz_estimate1 = ((cycle - this.prev_hz_cycle_count + .01) / (hz_timestamp - this.prev_hz_timestamp + .01)) * 1000 / 2;
-        this.prev_hz_estimate2 = this.prev_hz_estimate1;
-        this.prev_hz_timestamp = hz_timestamp;
-        this.prev_hz_cycle_count = cycle;
-
-        return this.prev_hz_estimate1;
-    }
-
-    // return an averaged speed: called periodically during normal running
-    hz_estimate(cycle: number): number {
-        if (cycle % this.hz_sampling_rate !== 3) return this.prev_hz_estimate1;
-
-        const hz_timestamp: number = now();
-
-        let hz_estimate = (cycle - this.prev_hz_cycle_count + .01) / (hz_timestamp - this.prev_hz_timestamp + .01);
-
-        hz_estimate = hz_estimate * 1000 / 2; // convert from phases per millisecond to Hz
-
-        if (hz_estimate < 5) {
-            this.hz_sampling_rate = 5;  // quicker
-        }
-
-        if (hz_estimate > 10) {
-            this.hz_sampling_rate = 10; // smoother
-        }
-
-        this.prev_hz_estimate2 = this.prev_hz_estimate1;
-        this.prev_hz_estimate1 = (hz_estimate + this.prev_hz_estimate1 + this.prev_hz_estimate2) / 3; // wrong way to average speeds
-        this.prev_hz_timestamp = hz_timestamp;
-        this.prev_hz_cycle_count = cycle;
-
-        return this.prev_hz_estimate1;
     }
 
     trace_step(trace: Trace) {
@@ -204,26 +168,26 @@ export class InternalState6502 {
 
         states += !this.circuit.is_named_node_high('clock2') ? 'T+' : '..';
         states += spc;
-        states += !this.circuit.is_named_node_high('t2') ? '..' : '..';
+        states += !this.circuit.is_named_node_high('t2') ? 'T2' : '..';
         states += spc;
-        states += !this.circuit.is_named_node_high('t3') ? '..' : '..';
+        states += !this.circuit.is_named_node_high('t3') ? 'T3' : '..';
         states += spc;
-        states += !this.circuit.is_named_node_high('t4') ? '..' : '..';
+        states += !this.circuit.is_named_node_high('t4') ? 'T4' : '..';
         states += spc;
-        states += !this.circuit.is_named_node_high('t5') ? '..' : '..';
+        states += !this.circuit.is_named_node_high('t5') ? 'T5' : '..';
         states += spc + '[';
 
         // Check three confirmed exclusive states (three nodes)
         if (this.circuit.is_node_high(862)) {
-            states += '..';
+            states += 'T1';
             // ...else if VEC0 is on...
         } else if (this.circuit.is_named_node_high('VEC0')) {
             // ...then tell the outside world
-            states += '..';
+            states += 'V0';
             // ...else if VEC1 is on...
         } else if (this.circuit.is_named_node_high('VEC1')) {
             // ...then this is the canonical T6. It is a synonym for VEC1
-            states += '..';
+            states += 'T6';
         } else {
             // ...else none of the "hidden" bits in the clock state is active
             states += '..';
@@ -261,7 +225,7 @@ export class InternalState6502 {
         if (bus_name === 'Phi')
             // Pretty-printed phase indication based on the state of cp1,
             // the internal Phase 1 node
-            return '&Phi;' + (this.circuit.is_named_node_high('cp1') ? '1' : '2');
+                return '&Phi;' + (this.circuit.is_named_node_high('cp1') ? '1' : '2');
         if (bus_name === 'Execute') return this.decoder.decode_instruction(this.circuit.read_bits('ir', 8));
         if (bus_name === 'Fetch') return this.circuit.is_named_node_high('sync') ? this.decoder.decode_instruction(data_bus) : '';
         // PLA outputs are mostly ^op- but some have a prefix too
@@ -304,6 +268,44 @@ export class InternalState6502 {
         }
 
         this.on_state_change({type: StateType.Signals, logged});
+    }
+
+    // return an averaged speed: called periodically during normal running
+    private hz_estimate(cycle: number): number {
+        if (cycle % this.hz_sampling_rate !== 3) return this.prev_hz_estimate1;
+
+        const hz_timestamp: number = now();
+
+        let hz_estimate = (cycle - this.prev_hz_cycle_count + .01) / (hz_timestamp - this.prev_hz_timestamp + .01);
+
+        hz_estimate = hz_estimate * 1000 / 2; // convert from phases per millisecond to Hz
+
+        if (hz_estimate < 5) {
+            this.hz_sampling_rate = 5;  // quicker
+        }
+
+        if (hz_estimate > 10) {
+            this.hz_sampling_rate = 10; // smoother
+        }
+
+        this.prev_hz_estimate2 = this.prev_hz_estimate1;
+        this.prev_hz_estimate1 = (hz_estimate + this.prev_hz_estimate1 + this.prev_hz_estimate2) / 3; // wrong way to average speeds
+        this.prev_hz_timestamp = hz_timestamp;
+        this.prev_hz_cycle_count = cycle;
+
+        return this.prev_hz_estimate1;
+    }
+
+    // return instantaneous speed: called twice, before and after a timed run using go_for()
+    private hz_instantaneous(cycle: number): number {
+        const hz_timestamp: number = now();
+
+        this.prev_hz_estimate1 = ((cycle - this.prev_hz_cycle_count + .01) / (hz_timestamp - this.prev_hz_timestamp + .01)) * 1000 / 2;
+        this.prev_hz_estimate2 = this.prev_hz_estimate1;
+        this.prev_hz_timestamp = hz_timestamp;
+        this.prev_hz_cycle_count = cycle;
+
+        return this.prev_hz_estimate1;
     }
 
     private read_accumulator = (): number => this.circuit.read_bits('a', 8);

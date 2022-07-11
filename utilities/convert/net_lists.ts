@@ -104,7 +104,7 @@ function get_transistors(
         const definition: (string | number | number[])[] = transistor_defs[idx];
         const name: number = parseInt((definition[0] as string).substring(1));
         const gate: number = definition[1] as number;
-        const bb: number = definition[4] as number;
+        const bb: number[] = definition[4] as number[];
 
         let c1: number = definition[2] as number;
         let c2: number = definition[3] as number;
