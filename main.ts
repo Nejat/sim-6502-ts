@@ -22,15 +22,15 @@ const on_trigger = async (trigger: TriggerMessage) => await debug(trigger.output
 
 const net_list_6502 = await read_json<NetList>(net_list_6502_file);
 const circuit_6502 = new Circuit(net_list_6502, /*on_trace*/);
-const op_codes_6502 = await read_json<number[]>(op_codes_6502_file);
+const op_codes_6502 = await read_json<string[]>(op_codes_6502_file);
 const decoder = new InstructionDecoder(op_codes_6502);
-const tracer = new InternalState6502(circuit_6502, decoder, on_state_change);
+const internals = new InternalState6502(circuit_6502, decoder, on_state_change);
 const memory = new Memory();
 const test_program_6502 = await read_json<Code>(test_program_6502_file);
 //const nmi_cpu_test_6502 = await read_json<CPUTest>(nmi_cpu_test_6502_file);
 
-const cpu_6502: CPU6502 = new CPU6502(circuit_6502, memory, tracer, on_trigger);
+const cpu_6502: CPU6502 = new CPU6502(circuit_6502, memory, internals, on_trigger);
 
 //cpu_6502.test_cpu(nmi_cpu_test_6502);
 cpu_6502.load_program(test_program_6502);
-//cpu_6502.go(500);
+cpu_6502.go(500);

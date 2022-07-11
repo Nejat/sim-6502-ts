@@ -2,7 +2,7 @@ import {StateType} from "../simulator/internals.ts";
 import {Trigger} from "../simulator/trigger.ts";
 
 declare global {
-    type DebugOutput = (debug: string) => Promise;
+    type DebugOutput = (debug: string) => Promise<void>;
     type OnStateChange = (internals: Internals) => void;
     type OnTrace = (trace: string) => void;
     type OnTrigger = (message: TriggerMessage) => void;
@@ -112,7 +112,7 @@ declare global {
         gate: number,
         c1: number,
         c2: number,
-        bb: number,
+        bb: number[],
     }
 
     interface TransistorDefinitions {

@@ -80,7 +80,6 @@ export class CPU6502 {
             steps--;
         }
 
-        this.internals.hz_instantaneous(this.cycle);
         this.internals.log_chip_status(this.cycle, this.address_bus_read(), this.data_bus_read());
 
         this.running = false;
@@ -134,6 +133,8 @@ export class CPU6502 {
                 this.memory.write(segment.address + offset, segment.code[offset]);
             }
         });
+
+        this.memory.dump_memory();
 
         if (executable.clock_triggers !== undefined) {
             for (const idx in executable.clock_triggers) {

@@ -10,7 +10,7 @@ export class Memory {
     dump_memory(): void {
         const lines: string[] = [];
         let line = ''
-        let last = undefined;
+        let last = -1;
         const write_byte = (idx: number, byte: string) => {
             if (idx % 8 === 0) {
                 line += ' ';
@@ -45,7 +45,7 @@ export class Memory {
         for (const array_index in this.memory) {
             let idx = parseInt(array_index);
 
-            if (last === undefined || idx - last !== 1) {
+            if (idx - last !== 1) {
                 write_tail();
 
                 const start = idx % 16;
