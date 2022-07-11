@@ -35,3 +35,9 @@ export async function debug_writer(filename: string): Promise<DebugOutput> {
 
     return async (debug: string) => await writeAll(debug_output, encoder.encode(`${debug}\n`));
 }
+
+export function console_writer(): DebugOutput {
+    const encoder = new TextEncoder();
+
+    return async (debug: string) => await Deno.stdout.write(encoder.encode(debug));
+}
