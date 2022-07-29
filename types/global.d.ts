@@ -2,6 +2,7 @@ import {StateType} from "../simulator/internals.ts";
 import {Trigger} from "../simulator/trigger.ts";
 
 declare global {
+    type ConsoleOutput = (debug: string) => Promise<any>;
     type DebugOutput = (debug: string) => Promise<void>;
     type OnStateChange = (internals: Internals) => void;
     type OnTrace = (trace: string) => void;
@@ -72,7 +73,7 @@ declare global {
     interface NetNodes {
         length: number;
 
-        [node: number]: (NetNode | null);
+        [node_number: number]: (NetNode | null);
     }
 
     interface NetNodeState {
@@ -85,7 +86,7 @@ declare global {
     interface NetNodeStates {
         length: number;
 
-        [node: number]: (NetNodeState | null);
+        [node_number: number]: (NetNodeState | null);
     }
 
     interface NodeNames {
@@ -94,6 +95,10 @@ declare global {
 
     interface Padding {
         [name: string]: number
+    }
+
+    interface RecalculateHash {
+        [node_number: number]: (boolean | undefined);
     }
 
     interface SegmentDefinitions {
@@ -124,7 +129,7 @@ declare global {
     interface Transistors {
         length: number;
 
-        [name: number]: Transistor;
+        [transistor_name: number]: Transistor;
 
         forEach(each: (tn: Transistor) => void): void;
     }
@@ -132,7 +137,7 @@ declare global {
     interface TransistorStates {
         length: number;
 
-        [name: number]: boolean;
+        [transistor_name: number]: boolean;
     }
 
     interface TriggerMessage {

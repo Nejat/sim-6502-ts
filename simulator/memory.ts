@@ -4,7 +4,7 @@ export class Memory {
     private memory: number[] = [];
 
     clear(): void {
-        this.memory = [];
+        this.memory.length = 0;
     }
 
     dump_memory(): void {
@@ -80,7 +80,7 @@ export class Memory {
         return this.memory[address] === undefined ? 0 : this.memory[address];
     }
 
-    write(address: number, data: number) {
+    write(address: number, data: number): void {
         this.memory[address] = data;
     }
 }

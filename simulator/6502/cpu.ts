@@ -8,8 +8,9 @@ import {Trigger} from "../trigger.ts";
 const data_bus = ['db0', 'db1', 'db2', 'db3', 'db4', 'db5', 'db6', 'db7'];
 
 export class CPU6502 {
+    public readonly memory: Memory;
+
     private readonly circuit: Circuit;
-    private readonly memory: Memory;
     private readonly name = '6502';
     private trace: Trace[] = [];
     private readonly internals: InternalState6502;
@@ -52,7 +53,7 @@ export class CPU6502 {
             this.init_chip();
         }
 
-        this.running = true;
+        this.running = steps !== undefined && steps > 0;
 
         while (this.running) {
             if (steps !== undefined) {
@@ -72,7 +73,7 @@ export class CPU6502 {
     //    note: to run an interactive program, use a URL like
     // helper function: allows us to poll 'running' without resetting it when we're re-scheduled
     //noinspection JSUnusedGlobalSymbols
-    go_for_n(steps: number) {
+    go_for_n(steps: number): void {
         while (steps > 0) {
             this.half_step();
 
@@ -86,7 +87,7 @@ export class CPU6502 {
     }
 
     //noinspection JSUnusedGlobalSymbols
-    go_until_sync() {
+    go_until_sync(): void {
         this.half_step();
 
         while (
@@ -98,7 +99,7 @@ export class CPU6502 {
     }
 
     //noinspection JSUnusedGlobalSymbols
-    go_until_sync_or_write() {
+    go_until_sync_or_write(): void {
         this.half_step();
 
         this.cycle++;
@@ -116,7 +117,7 @@ export class CPU6502 {
         this.internals.log_chip_status(this.cycle, this.address_bus_read(), this.data_bus_read());
     }
 
-    load_program(executable: Code) {
+    load_program(executable: Code): void {
         this.memory.clear();
 
         this.clock_triggers = {};
@@ -133,8 +134,6 @@ export class CPU6502 {
                 this.memory.write(segment.address + offset, segment.code[offset]);
             }
         });
-
-        this.memory.dump_memory();
 
         if (executable.clock_triggers !== undefined) {
             for (const idx in executable.clock_triggers) {
@@ -197,7 +196,7 @@ export class CPU6502 {
     }
 
     //noinspection JSUnusedGlobalSymbols
-    test_cpu(test: CPUTest) {
+    test_cpu(test: CPUTest): void {
         this.reset_chip();
         this.load_program(test.program);
 
@@ -282,9 +281,14 @@ export class CPU6502 {
     }
 
     private init_chip() {
+//        const debug = this.circuit.get_debugger();
+
         console.log('initialize chip ...\n');
 
         this.circuit.reset();
+
+//        debug.reset();
+//        console.log(debug.changes(true).nodes);
 
         this.circuit.set_lo('res');
         this.circuit.set_lo('clk0');
@@ -292,6 +296,8 @@ export class CPU6502 {
         this.circuit.set_lo('so');
         this.circuit.set_hi('irq');
         this.circuit.set_hi('nmi');
+
+//        console.log(debug.changes().nodes);
 
         this.circuit.recalc_all_nodes();
 
@@ -303,7 +309,7 @@ export class CPU6502 {
         this.circuit.set_hi('res');
 
         // avoid updating graphics and trace buffer before user code
-        for (let idx = 0; idx < 18; idx++) {
+        for (let idx = 0; idx < 2; idx++) {
             this.half_step();
         }
 
@@ -313,6 +319,11 @@ export class CPU6502 {
 
         this.internals.setup_log_list(this.data_bus_read());
         this.internals.log_chip_status(this.cycle, this.address_bus_read(), this.data_bus_read());
+
+//        let changes = debug.changes();
+//
+//        console.log(changes.nodes);
+//        console.log(changes.transistors);
     }
 
     private memory_get(): number[] {
@@ -325,7 +336,7 @@ export class CPU6502 {
         return data;
     }
 
-    private memory_set(data: number[]) {
+    private memory_set(data: number[]): void {
         for (let idx = 0; idx < 0x200; idx++) {
             this.memory.write(idx, data[idx]);
         }

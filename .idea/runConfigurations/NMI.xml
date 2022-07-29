@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="NMI" type="DenoConfigurationType" inputPath="$PROJECT_DIR$/main.ts" programParameters="run --allow-read --allow-write">
+    <option name="applicationArguments" value="nmi" />
+    <method v="2" />
+  </configuration>
+</component>
