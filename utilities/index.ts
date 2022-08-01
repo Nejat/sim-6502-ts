@@ -26,7 +26,7 @@ export async function write_json<T>(file_name: string, value: T): Promise<void> 
 }
 
 export async function debug_writer(filename: string): Promise<DebugOutput> {
-    if (!exists(debug_folder)) {
+    if (!await exists(debug_folder)) {
         await Deno.mkdir(debug_folder);
     }
 
@@ -36,7 +36,13 @@ export async function debug_writer(filename: string): Promise<DebugOutput> {
     return async (debug: string) => await writeAll(debug_output, encoder.encode(`${debug}\n`));
 }
 
-export function console_writer(): DebugOutput {
+export function console_ln_writer(): ConsoleOutput {
+    const encoder = new TextEncoder();
+
+    return async (debug: string) => await Deno.stdout.write(encoder.encode(`${debug}\n`));
+}
+
+export function console_writer(): ConsoleOutput {
     const encoder = new TextEncoder();
 
     return async (debug: string) => await Deno.stdout.write(encoder.encode(debug));

@@ -102,7 +102,7 @@ function get_transistors(
 
     for (const idx in transistor_defs) {
         const definition: (string | number | number[])[] = transistor_defs[idx];
-        const name: number = parseInt((definition[0] as string).substring(1));
+        const transistor_name: number = parseInt((definition[0] as string).substring(1));
         const gate: number = definition[1] as number;
         const bb: number[] = definition[4] as number[];
 
@@ -120,24 +120,24 @@ function get_transistors(
         }
 
         if (nodes[gate] === undefined || nodes[gate] === null) {
-            throw new Error(`Transistor: ${name} has an undefined gate node ${gate}`);
+            throw new Error(`Transistor: ${transistor_name} has an undefined gate node ${gate}`);
         } else {
-            nodes[gate]!.gates.push(name);
+            nodes[gate]!.gates.push(transistor_name);
         }
 
         if (nodes[c1] === undefined || nodes[c1] === null) {
-            throw new Error(`Transistor: ${name} has an undefined c1 node ${c1}`);
+            throw new Error(`Transistor: ${transistor_name} has an undefined c1 node ${c1}`);
         } else {
-            nodes[c1]!.c1c2s.push(name);
+            nodes[c1]!.c1c2s.push(transistor_name);
         }
 
         if (nodes[c2] === undefined || nodes[c2] === null) {
-            throw new Error(`Transistor: ${name} has an undefined c2 node ${c2}`);
+            throw new Error(`Transistor: ${transistor_name} has an undefined c2 node ${c2}`);
         } else {
-            nodes[c2]!.c1c2s.push(name);
+            nodes[c2]!.c1c2s.push(transistor_name);
         }
 
-        transistors[name] = {name, gate, c1, c2, bb};
+        transistors[transistor_name] = {name: transistor_name, gate, c1, c2, bb};
     }
 
     return transistors;

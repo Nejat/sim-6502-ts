@@ -95,7 +95,7 @@ export class InternalState6502 {
         return (0x100000000 + (hi << 16) + lo).toString(16).slice(-8);
     }
 
-    log_chip_status(cycle: number, address_bus: number, data_bus: number) {
+    log_chip_status(cycle: number, address_bus: number, data_bus: number): void {
         if (this.on_state_change === undefined) return;
 
         this.hz_instantaneous(cycle);
@@ -132,13 +132,13 @@ export class InternalState6502 {
         this.log_signals(cycle, this.log_these, data_bus);
     }
 
-    trace_step(trace: Trace) {
+    trace_step(trace: Trace): void {
         if (this.golden_check_sum !== undefined) {
             this.trace_check_sum = InternalState6502.adler32(this.trace_check_sum + trace.state + trace.memory.slice(0, 511).toString());
         }
     }
 
-    setup_log_list(data_bus: number, names = '') {
+    setup_log_list(data_bus: number, names = ''): void {
         if (this.expert_mode) {
             this.update_log_list(data_bus, names);
         }
@@ -257,7 +257,7 @@ export class InternalState6502 {
     }
 
     // update the table of signal values, by prepending or appending
-    private log_signals(cycle: number, names: string[], data_bus: number) {
+    private log_signals(cycle: number, names: string[], data_bus: number): void {
         if (this.log_these.length < 2 || this.on_state_change === undefined) return;
 
         const logged: Logged = {};
@@ -342,11 +342,11 @@ export class InternalState6502 {
         return signals;
     }
 
-    private update_log_list(data_bus: number, names = '') {
+    private update_log_list(data_bus: number, names = ''): void {
         if (this.on_state_change === undefined) return;
 
         // user supplied a list of signals, which we append to the set defined by loglevel
-        this.log_these = [];
+        this.log_these.length = 0;
         this.log_these.push(...this.signal_set(this.log_level));
 
         names = names.trim();
